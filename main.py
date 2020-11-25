@@ -20,14 +20,16 @@ class DifficultyWindow(QWidget):
         buttonEasy = QPushButton(f'{"łatwy".title()}', self)
         buttonMedium = QPushButton('Średni', self)
         buttonHard = QPushButton('Trudny', self)
-        buttonEasy.clicked.connect(self.easyClick)
-        buttonMedium.clicked.connect(self.mediumClick)
-        buttonHard.clicked.connect(self.hardClick)
+        buttonEasy.clicked.connect(lambda: self.initGameUI(300, 300, 10))
+        buttonMedium.clicked.connect(lambda: self.initGameUI(500, 500, 14))
+        buttonHard.clicked.connect(lambda: self.initGameUI(800, 800, 20))
+
 
         self.gridLayout.addWidget(buttonEasy, 1, 0)
         self.gridLayout.addWidget(buttonMedium, 1, 1)
         self.gridLayout.addWidget(buttonHard, 1, 2)
         self.gridLayout.addWidget(self.difText, 0, 1)
+
 
         self.setWindowTitle(self.name)
         self.show()
@@ -40,15 +42,6 @@ class DifficultyWindow(QWidget):
         minesLeft = playField
         self.gridLayout.addWidget(QLabel(f'{minesLeft}'), 0, 0)
         self.difText.setText(' ')
-
-    def easyClick(self):
-        self.initGameUI(300, 300, 10)
-
-    def mediumClick(self):
-        self.initGameUI(500, 500, 14)
-
-    def hardClick(self):
-        self.initGameUI(800, 800, 20)
 
 
 if __name__ == '__main__':
