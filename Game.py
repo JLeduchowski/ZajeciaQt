@@ -7,13 +7,11 @@ class Game:
     gameMap = None
     checkList = []
 
-    def __init__(self,level = "easy"):
+    def __init__(self,playfield, mines):
         self.timer = 0
         self.flags = 0
-        self.level = level
-        if level == "easy":
-            self.gameMap = Map.Map(8,10)
-            self.flags = 3
+        self.gameMap = Map.Map(playfield,mines)
+        self.flags = mines
 
     def startTimer(self):
         pass
