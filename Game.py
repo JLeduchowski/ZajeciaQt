@@ -31,7 +31,7 @@ class Game:
                         for z in range(y - 1, y + 2):
                             if i != x or z != y:
                                 # print(f'sprawdzam otoczenie punktu {x},{y}, czyli - {i},{z}')
-                                if (self.gameMap.map[i][z].isBomb):
+                                if self.gameMap.map[i][z].isBomb:
                                     self.gameMap.map[x][y].mineIndicator += 1
                 if self.gameMap.map[x][y].mineIndicator == 0:
                     for i in range(x - 1, x + 2):
@@ -49,10 +49,10 @@ class Game:
                 pair = self.checkList.pop(0)
                 Game.checkCell(self, pair[0], pair[1])
 
-    def setLevel(self,level):
+    def setLevel(self, level):
         self.level = level
 
-    def flagCell(self,x,y):
+    def flagCell(self, x, y):
         self.gameMap.map[x][y].state = CellState.flagged
         self.flags -= 1
 

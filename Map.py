@@ -8,7 +8,7 @@ class Map(object):
         self.mines = mines
         self.map = []
         Map.initMap(self)
-        Map.gameMines(self,3,3)
+        Map.gameMines(self, 3, 3)
         #Map.testGameMines(self)
 
     def initMap(self):
