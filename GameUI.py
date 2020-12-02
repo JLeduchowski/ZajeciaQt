@@ -48,7 +48,7 @@ class DifficultyWindow(QWidget):
 
     def initGameUI(self, width=500, height=500, playField=10, mines = 10):
         self.timer = time.perf_counter()
-        self.Timer.start()
+
         self.setFixedSize(width, height)
         for i in range(1, playField+1):
             self.buttons.append([])
