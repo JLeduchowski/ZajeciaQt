@@ -61,8 +61,8 @@ class Game:
         win = False
         if self.flags == 0:
             win = True
-            for i in range(1, self.gameMap.size):
-                for j in range(1, self.gameMap.size):
+            for i in range(1, self.gameMap.size+1):
+                for j in range(1, self.gameMap.size+1):
                     if self.gameMap.map[i][j].state == CellState.uncovered:
                         win = False
         return win
