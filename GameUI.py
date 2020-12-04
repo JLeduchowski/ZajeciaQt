@@ -3,7 +3,7 @@ import sys
 from functools import partial
 import time
 from threading import Thread
-
+import MyTimer
 from PyQt5 import QtCore
 from PyQt5.QtCore import QRect
 from PyQt5.QtWidgets import QGridLayout, QWidget, QLabel, QPushButton, \
@@ -26,6 +26,9 @@ class DifficultyWindow(QWidget):
         self.flagLabel = None
         self.timer = None
         self.timeLabel = QLabel('')
+        self.time = 0
+        self.timerThread = MyTimer.MyTimer(self.setTime)
+
 
     def initUI(self):
         self.setFixedSize(500, 200)
@@ -48,6 +51,7 @@ class DifficultyWindow(QWidget):
 
     def initGameUI(self, width=500, height=500, playField=10, mines = 10):
         self.timer = time.perf_counter()
+        self.timerThread.start()
 
         self.setFixedSize(width, height)
         for i in range(1, playField+1):
@@ -60,39 +64,54 @@ class DifficultyWindow(QWidget):
                 self.buttons[i-1].append(tempButton)
                 self.gridLayout.addWidget(tempButton , i, j)
         self.flagsLeft = mines
-        self.flagLabel = QLabel(f'{self.flagsLeft}')
+        self.flagLabel = QLabel(f'Flag: {self.flagsLeft}')
+        self.flagLabel.setFixedWidth(100)
         self.gridLayout.addWidget(self.flagLabel, 0, 0)
+        self.timeLabel.setText('')
+        self.timeLabel.setFixedWidth(150)
+
+        self.gridLayout.addWidget(self.timeLabel,0,3)
         self.difText.setText(' ')
         self.game = Game(playField,mines)
 
 
     def onRightClick(self, x, y):
-        self.game.flagCell(x+1, y+1)
-        self.flagLabel.setText(f'{self.game.flags}')
-        if self.game.checkIfWin():
-            self.celebration()
-        self.updateMap()
 
+        if (self.game.gameMap.map[x + 1][y + 1].state == CellState.flagged):
+            self.game.gameMap.map[x + 1][y + 1].state = CellState.uncovered
+            self.game.flags += 1
+            self.flagLabel.setText(f'Flag: {self.game.flags}')
+            self.updateMap()
+        elif(self.game.gameMap.map[x+1][y+1].state != CellState.flagged and self.game.flags > 0):
+            self.game.flagCell(x + 1, y + 1)
+            self.flagLabel.setText(f'Flag: {self.game.flags}')
+            if self.game.checkIfWin():
+                self.timerThread.running = False
+                self.celebration()
+            self.updateMap()
 
     def onButtonClick(self, x, y):
-        self.game.checkCell(x+1, y+1)
-        print(f'Clicked cell {x+1},{y+1}')
-        print(f'')
-        self.flagLabel.setText(f'{self.game.flags}')
-        self.updateMap()
-        print(f'')
+        if(self.game.gameMap.map[x+1][y+1].state != CellState.flagged):
+            self.game.checkCell(x+1, y+1)
+            print(f'Clicked cell {x+1},{y+1}')
+            print(f'')
+            self.flagLabel.setText(f'Flag: {self.game.flags}')
+            self.updateMap()
+            print(f'')
         # for i in range(1, self.game.gameMap.size + 1):
         #     print(f'')
         #     for y in range(1, self.game.gameMap.size + 1):
         #         print(f'{self.game.gameMap.map[i][y].mineIndicator} ', end = "")
-        if self.game.gameMap.map[x+1][y+1].isBomb:
-            self.showAllMines()
-            self.sadness()
-            return
+            if self.game.gameMap.map[x+1][y+1].isBomb:
+                self.timerThread.running = False
+                self.showAllMines()
+                self.sadness()
+                return
 
-        if self.game.checkIfWin():
-            self.celebration()
-        self.game.gameMap.showMapConsole()
+            if self.game.checkIfWin():
+                self.timerThread.running = False
+                self.celebration()
+            self.game.gameMap.showMapConsole()
 
     def updateMap(self):
         for x in range(1, self.game.gameMap.getSize()+1):
@@ -121,6 +140,7 @@ class DifficultyWindow(QWidget):
                                       QMessageBox.Yes | QMessageBox.No,
                                       QMessageBox.No)
 
+
         if choice == QMessageBox.Yes:
             print('hej')
         elif choice == QMessageBox.No:
@@ -140,3 +160,7 @@ class DifficultyWindow(QWidget):
     #    while True:
     #        currentTime = time.perf_counter() - startTime
     #        time.sleep(0.9)
+
+    def setTime(self, newtime):
+        self.time = newtime
+        self.timeLabel.setText(f'Czas: {self.time} sekund.')

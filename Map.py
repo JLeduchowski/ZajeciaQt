@@ -42,18 +42,6 @@ class Map(object):
            for y in range(1, self.size+1):
                print(f'{i},{y} {self.map[i][y].isBomb}')
 
-    # def testGameMines(self):
-    #     self.map[4][2].setIsBomb(True)
-    #     self.map[1][4].setIsBomb(True)
-    #     self.map[6][1].setIsBomb(True)
-    #     self.map[6][2].setIsBomb(True)
-    #     self.map[6][7].setIsBomb(True)
-    #     self.map[7][2].setIsBomb(True)
-    #     self.map[2][8].setIsBomb(True)
-    #     self.map[4][7].setIsBomb(True)
-    #     self.map[8][6].setIsBomb(True)
-    #     self.map[8][5].setIsBomb(True)
-
     def gameMines(self, x, y):
         # bedzie generowac bomby w miejscach roznych od x y (1 wybor gracza)
 

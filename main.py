@@ -1,10 +1,19 @@
+from asyncio import Event
+from datetime import datetime
+
 import Game
+import MyTimer
 import GameUI
 import sys
 from PyQt5.QtWidgets import QWidget, QGridLayout, QPushButton, QLabel, \
     QApplication
 
 if __name__ == '__main__':
+
+
+
+    # thread = MyTimer.MyTimer()
+    # thread.start()
 
     app = QApplication(sys.argv)
     ex = GameUI.DifficultyWindow()
