@@ -55,7 +55,16 @@ class DifficultyWindow(QWidget):
 
     def keyPressEvent(self, event):
         if event.key() == Qt.Key_Escape:
-            self.reload()
+            choice = QMessageBox.question(self,
+                                          'Powrót',
+                                          f'Czy napewno chcesz powrócić do menu?',
+                                          QMessageBox.Yes | QMessageBox.No,
+                                          QMessageBox.No)
+
+            if choice == QMessageBox.Yes:
+                self.reload()
+            elif choice == QMessageBox.No:
+                print('brak akcji')
             print(f'wcisnieto escape')
 
     def reload(self):
