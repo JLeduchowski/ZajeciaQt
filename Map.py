@@ -8,7 +8,7 @@ class Map(object):
         self.mines = mines
         self.map = []
         Map.initMap(self)
-        Map.gameMines(self, 3, 3)
+        Map.gameMines(self)
         #Map.testGameMines(self)
 
     def initMap(self):
@@ -42,8 +42,7 @@ class Map(object):
            for y in range(1, self.size+1):
                print(f'{i},{y} {self.map[i][y].isBomb}')
 
-    def gameMines(self, x, y):
-        # bedzie generowac bomby w miejscach roznych od x y (1 wybor gracza)
+    def gameMines(self):
 
         for i in range(self.mines):
             num1 = random.randint(1, self.size)

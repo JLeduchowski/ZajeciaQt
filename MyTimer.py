@@ -27,5 +27,6 @@ class MyTimer():
     def sleep(self):
         self.function(self.seconds)
 
-
+    def stop(self):
+        self.thread.cancel()
 

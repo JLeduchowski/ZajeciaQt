@@ -8,16 +8,24 @@ import sys
 from PyQt5.QtWidgets import QWidget, QGridLayout, QPushButton, QLabel, \
     QApplication
 
+
+
 if __name__ == '__main__':
-
-
 
     # thread = MyTimer.MyTimer()
     # thread.start()
 
-    app = QApplication(sys.argv)
-    ex = GameUI.DifficultyWindow()
-    sys.exit(app.exec_())
+    currentExitCode = GameUI.EXIT_CODE_REBOOT
+
+
+    while currentExitCode == GameUI.EXIT_CODE_REBOOT:
+        app = QApplication(sys.argv)
+        ex = GameUI.DifficultyWindow()
+        currentExitCode = app.exec_()
+        ex = None
+        app = None
+
+
 
     # g1 = Game.Game();
     # g1.gameMap.showMapConsole()
