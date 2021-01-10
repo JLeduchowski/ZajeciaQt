@@ -4,16 +4,18 @@ from functools import partial
 import time
 from threading import Thread
 import MyTimer
-from PyQt5 import QtCore
+from PyQt5 import QtCore, Qt
 from PyQt5.QtCore import QRect
 from PyQt5.QtWidgets import QGridLayout, QWidget, QLabel, QPushButton, \
     QMessageBox, QApplication, qApp
+from PyQt5.Qt import Qt
 
 from Game import Game
 from CellState import CellState
 
-
+EXIT_CODE_REBOOT = -12345678
 class DifficultyWindow(QWidget):
+
     def __init__(self):
         super().__init__()
         self.buttons = []
@@ -27,7 +29,9 @@ class DifficultyWindow(QWidget):
         self.timer = None
         self.timeLabel = QLabel('')
         self.time = 0
+        self.size = 0
         self.timerThread = MyTimer.MyTimer(self.setTime)
+
 
 
     def initUI(self):
@@ -49,9 +53,27 @@ class DifficultyWindow(QWidget):
         self.setWindowTitle(self.name)
         self.show()
 
+    def keyPressEvent(self, event):
+        if event.key() == Qt.Key_Escape:
+            choice = QMessageBox.question(self,
+                                          'Powrót',
+                                          f'Czy napewno chcesz powrócić do menu?',
+                                          QMessageBox.Yes | QMessageBox.No,
+                                          QMessageBox.No)
+
+            if choice == QMessageBox.Yes:
+                self.reload()
+            elif choice == QMessageBox.No:
+                print('brak akcji')
+            print(f'wcisnieto escape')
+
+    def reload(self):
+        self.timerThread.stop()
+        return qApp.exit(EXIT_CODE_REBOOT)
+
     def initGameUI(self, width=500, height=500, playField=10, mines = 10):
-        self.timer = time.perf_counter()
-        self.timerThread.start()
+
+        self.size = playField
 
         self.setFixedSize(width, height)
         for i in range(1, playField+1):
@@ -65,8 +87,11 @@ class DifficultyWindow(QWidget):
                 self.gridLayout.addWidget(tempButton , i, j)
         self.flagsLeft = mines
         self.flagLabel = QLabel(f'Flag: {self.flagsLeft}')
+        self.exitLabel = QLabel(f'Esc - menu')
         self.flagLabel.setFixedWidth(100)
+        self.exitLabel.setFixedWidth(200)
         self.gridLayout.addWidget(self.flagLabel, 0, 0)
+        self.gridLayout.addWidget(self.exitLabel,0,7)
         self.timeLabel.setText('')
         self.timeLabel.setFixedWidth(150)
 
@@ -76,37 +101,64 @@ class DifficultyWindow(QWidget):
 
 
     def onRightClick(self, x, y):
+        # if(self.game.gameStarted == False):
+        #     self.game.gameStarted = True
+        #     self.timer = time.perf_counter()
+        #     self.timerThread.start()
 
-        if (self.game.gameMap.map[x + 1][y + 1].state == CellState.flagged):
-            self.game.gameMap.map[x + 1][y + 1].state = CellState.uncovered
-            self.game.flags += 1
-            self.flagLabel.setText(f'Flag: {self.game.flags}')
-            self.updateMap()
-        elif(self.game.gameMap.map[x+1][y+1].state != CellState.flagged and self.game.flags > 0):
-            self.game.flagCell(x + 1, y + 1)
-            self.flagLabel.setText(f'Flag: {self.game.flags}')
-            if self.game.checkIfWin():
-                self.timerThread.running = False
-                self.celebration()
-            self.updateMap()
+        if(not self.game.gameEnded and self.game.gameStarted):
+            if (self.game.gameMap.map[x + 1][y + 1].state == CellState.flagged):
+                self.game.gameMap.map[x + 1][y + 1].state = CellState.uncovered
+                self.game.flags += 1
+                self.flagLabel.setText(f'Flag: {self.game.flags}')
+                self.updateMap()
+            elif(self.game.gameMap.map[x+1][y+1].state != CellState.flagged and self.game.flags > 0):
+                self.game.flagCell(x + 1, y + 1)
+                self.flagLabel.setText(f'Flag: {self.game.flags}')
+                if self.game.checkIfWin():
+                    self.timerThread.running = False
+                    self.celebration()
+                self.updateMap()
 
     def onButtonClick(self, x, y):
-        if(self.game.gameMap.map[x+1][y+1].state != CellState.flagged):
-            self.game.checkCell(x+1, y+1)
-            print(f'Clicked cell {x+1},{y+1}')
-            print(f'')
-            self.flagLabel.setText(f'Flag: {self.game.flags}')
-            self.updateMap()
-            print(f'')
+        if (self.game.gameStarted == False):
+            self.game.gameStarted = True
+            self.timer = time.perf_counter()
+            self.timerThread.start()
+
+        if(self.game.firstMove):
+            if(self.game.gameMap.map[x+1][y+1].isBomb):
+                self.game.gameMap.map[x+1][y+1].setIsBomb(False)
+                num1 = random.randint(1, self.size)
+                num2 = random.randint(1, self.size)
+                print(f'{num1},{num2}')
+                while self.game.gameMap.map[num1][num2].getIsBomb():
+                    print(f'szukam bombie nowego miejsca')
+                    num1 = random.randint(1, self.size)
+                    num2 = random.randint(1, self.size)
+                    print(f'{num1},{num2}')
+                self.game.gameMap.map[num1][num2].setIsBomb(True)
+                print(f'wstawiono bombe na {num1},{num2}')
+
+        self.game.firstMove = False
+
+        if(not self.game.gameEnded):
+            if(self.game.gameMap.map[x+1][y+1].state != CellState.flagged):
+                self.game.checkCell(x+1, y+1)
+                print(f'Clicked cell {x+1},{y+1}')
+                print(f'')
+                self.flagLabel.setText(f'Flag: {self.game.flags}')
+                self.updateMap()
+                print(f'')
         # for i in range(1, self.game.gameMap.size + 1):
         #     print(f'')
         #     for y in range(1, self.game.gameMap.size + 1):
         #         print(f'{self.game.gameMap.map[i][y].mineIndicator} ', end = "")
-            if self.game.gameMap.map[x+1][y+1].isBomb:
-                self.timerThread.running = False
-                self.showAllMines()
-                self.sadness()
-                return
+                if self.game.gameMap.map[x+1][y+1].isBomb:
+                    self.timerThread.running = False
+                    self.showAllMines()
+                    self.sadness()
+                    return
 
             if self.game.checkIfWin():
                 self.timerThread.running = False
@@ -134,26 +186,32 @@ class DifficultyWindow(QWidget):
                     self.buttons[x-1][y-1].setText('B')
 
     def celebration(self):
+        self.game.gameEnded = True
         timeEnd = time.perf_counter()
         choice = QMessageBox.question(self,
-                'Gratulacje', f'Brawo, zajęło Ci to {timeEnd-self.timer:0.2f} sekund czy chcesz zagrać jeszcze raz?',
+                'Gratulacje', f'Brawo, zajęło Ci to {timeEnd-self.timer:0.2f} sekund, czy chcesz zagrać jeszcze raz?',
                                       QMessageBox.Yes | QMessageBox.No,
                                       QMessageBox.No)
 
-
         if choice == QMessageBox.Yes:
-            print('hej')
+            self.reload()
         elif choice == QMessageBox.No:
-            return
-        else:
             print('oj')
 
+
     def sadness(self):
-        msgBox = QMessageBox()
-        qApp.beep()
-        msgBox.setText('oj widzowie nie udalo sie')
-        msgBox.setWindowTitle('PORAŻKA')
-        msgBox.exec()
+        self.game.gameEnded = True
+
+        choice = QMessageBox.question(self,
+                                      'Porażka',
+                                      f'Czy chcesz zagrać jeszcze raz?',
+                                      QMessageBox.Yes | QMessageBox.No,
+                                      QMessageBox.No)
+
+        if choice == QMessageBox.Yes:
+            self.reload()
+        elif choice == QMessageBox.No:
+            print('oj')
 
     #class Timer(Thread):
     #    startTime = time.perf_counter()
@@ -163,4 +221,6 @@ class DifficultyWindow(QWidget):
 
     def setTime(self, newtime):
         self.time = newtime
-        self.timeLabel.setText(f'Czas: {self.time} sekund.')
+        if(self.game.gameStarted and not self.game.gameEnded):
+            if(self.timeLabel):
+                self.timeLabel.setText(f'Czas: {self.time} sekund.')

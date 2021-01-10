@@ -10,6 +10,9 @@ class Game:
     def __init__(self,playfield, mines):
         self.timer = 0
         self.flags = 0
+        self.gameStarted = False
+        self.gameEnded = False
+        self.firstMove = True
         self.gameMap = Map.Map(playfield,mines)
         self.flags = mines
 
@@ -38,10 +41,8 @@ class Game:
                         for z in range(y - 1, y + 2):
                             if i != x or z != y:
                                 coords = (i, z)
-                                if self.gameMap.map[i][
-                                    z].state == CellState.uncovered:
-                                    self.checkList.append(
-                                        coords) if coords not in self.checkList else self.checkList
+                                if self.gameMap.map[i][z].state == CellState.uncovered:
+                                    self.checkList.append(coords) if coords not in self.checkList else self.checkList
                                     # print(f'lista: {self.checkList}')
             # print(f'oznaczam punkt {x},{y} jako covered')
             self.gameMap.map[x][y].state = CellState.covered
